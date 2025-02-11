@@ -35,7 +35,7 @@ const LoveLetterGenerator = () => {
 
   const generateLetter = () => {
     setIsGenerating(true);
-    const templates = letterTemplates[tone];
+    const templates = letterTemplates[tone as keyof typeof letterTemplates];
     const randomIndex = Math.floor(Math.random() * templates.length);
     const selectedTemplate = templates[randomIndex].body;
 
