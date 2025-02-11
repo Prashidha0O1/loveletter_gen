@@ -12,7 +12,7 @@ import {
 import ViewShot from "react-native-view-shot"
 import { MaterialIcons, FontAwesome5, Ionicons } from '@expo/vector-icons';
 import { captureRef } from "react-native-view-shot"
-import { generateLoveLetter } from '../../utils/deepseekApi';
+import { letterTemplates } from '../../utils/deepseekApi';
 
 const LoveLetterGenerator = () => {
   const [recipientName, setRecipientName] = useState('');
@@ -33,23 +33,17 @@ const LoveLetterGenerator = () => {
     { id: 'poetic', icon: 'feather', label: 'Poetic' },
   ];
 
-  const generateLetter = async () => {
+  const generateLetter = () => {
     setIsGenerating(true);
-    try {
-      const response = await fetch(
-        `https://api.a0.dev/generate-letter?recipient=${encodeURIComponent(
-          recipientName
-        )}&occasion=${encodeURIComponent(occasion)}&tone=${encodeURIComponent(tone)}`
-      );
-      const data = await response.json();
-      setLetterContent(data.letter || '');
-    } catch (error) {
-      setLetterContent(
-        `Dearest ${recipientName},\n\nAs I sit here thinking of you, my heart overflows with affection. Your presence in my life is a beacon of light, guiding me through every moment.${occasion ? ' On this special ' + occasion + ', ' : ' '}I am reminded of the joy and warmth you bring to my world.\n\nForever yours,\nMe`
-      );
-    }
+    const templates = letterTemplates[tone];
+    const randomIndex = Math.floor(Math.random() * templates.length);
+    const selectedTemplate = templates[randomIndex].body;
+
+    const finalLetter = selectedTemplate.replace(/{occasion}/g, occasion);
+    setLetterContent(finalLetter);
     setIsGenerating(false);
     setShowResult(true);
+    
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
@@ -64,24 +58,8 @@ const LoveLetterGenerator = () => {
     ]).start();
   };
 
-  const handleGenerateLetter = async () => {
-    try {
-      const generatedLetter = await generateLoveLetter(recipientName, letterContent);
-      setLetterContent(generatedLetter);
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 1000,
-        useNativeDriver: true,
-      }).start();
-      Animated.timing(scaleAnim, {
-        toValue: 1,
-        duration: 1000,
-        useNativeDriver: true,
-      }).start();
-      setShowResult(true);
-    } catch (error) {
-      console.error('Error generating letter:', error);
-    }
+  const handleGenerateLetter = () => {
+    generateLetter();
   };
 
   const handleDownloadAndShare = async () => {
