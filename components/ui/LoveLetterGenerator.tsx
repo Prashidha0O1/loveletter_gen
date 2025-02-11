@@ -13,6 +13,7 @@ import ViewShot from "react-native-view-shot"
 import { MaterialIcons, FontAwesome5, Ionicons } from '@expo/vector-icons';
 import { captureRef } from "react-native-view-shot"
 import { letterTemplates } from '../../utils/deepseekApi';
+import { BlurView } from '@react-native-community/blur';
 
 const LoveLetterGenerator = () => {
   const [recipientName, setRecipientName] = useState('');
@@ -80,6 +81,12 @@ const LoveLetterGenerator = () => {
       visible={showResult}
       onRequestClose={() => setShowResult(false)}
     >
+      <BlurView
+        style={styles.absolute}
+        blurType="light"
+        blurAmount={10}
+        reducedTransparencyFallbackColor="white"
+      />
       <View style={styles.modalContainer}>
         <ViewShot ref={viewShotRef} options={{ format: "png", quality: 0.8 }}>
           <View style={[styles.letterContainer, styles.letterBackground]}>
@@ -103,7 +110,7 @@ const LoveLetterGenerator = () => {
               <Text style={styles.letterGreeting}>Dearest {recipientName},</Text>
               <Text style={styles.letterBody}>{letterContent}</Text>
               <Text style={styles.letterClosing}>With all my love,</Text>
-              <Text style={styles.letterSignature}>Me</Text>
+              <Text style={styles.letterSignature}>Your Lovely Ai Assistant, Destiny</Text>
             </Animated.View>
           </View>
         </ViewShot>
@@ -418,6 +425,13 @@ const styles = StyleSheet.create({
   },
   letterBackground: {
     backgroundColor: '#FFE5E5',
+  },
+  absolute: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
 });
 
