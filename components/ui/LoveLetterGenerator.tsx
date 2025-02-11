@@ -9,7 +9,10 @@ import {
   StyleSheet,
   Modal,
 } from 'react-native';
+import ViewShot from "react-native-view-shot"
 import { MaterialIcons, FontAwesome5, Ionicons } from '@expo/vector-icons';
+import { captureRef } from "react-native-view-shot"
+import { generateLoveLetter } from '../../utils/deepseekApi';
 
 const LoveLetterGenerator = () => {
   const [recipientName, setRecipientName] = useState('');
@@ -18,6 +21,7 @@ const LoveLetterGenerator = () => {
   const [showResult, setShowResult] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [letterContent, setLetterContent] = useState('');
+  const viewShotRef = useRef(null);
   
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.95)).current;
@@ -60,6 +64,37 @@ const LoveLetterGenerator = () => {
     ]).start();
   };
 
+  const handleGenerateLetter = async () => {
+    try {
+      const generatedLetter = await generateLoveLetter(recipientName, letterContent);
+      setLetterContent(generatedLetter);
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 1000,
+        useNativeDriver: true,
+      }).start();
+      Animated.timing(scaleAnim, {
+        toValue: 1,
+        duration: 1000,
+        useNativeDriver: true,
+      }).start();
+      setShowResult(true);
+    } catch (error) {
+      console.error('Error generating letter:', error);
+    }
+  };
+
+  const handleDownloadAndShare = async () => {
+    try {
+      const uri = await captureRef(viewShotRef, {
+        format: "png",
+        quality: 0.8,
+      });
+    } catch (error) {
+      console.error("Error sharing love letter:", error);
+    }
+  };
+
   const ResultModal = () => (
     <Modal
       animationType="slide"
@@ -68,40 +103,42 @@ const LoveLetterGenerator = () => {
       onRequestClose={() => setShowResult(false)}
     >
       <View style={styles.modalContainer}>
-        <View style={styles.letterContainer}>
-          <TouchableOpacity
-            style={styles.closeButton}
-            onPress={() => setShowResult(false)}
-          >
-            <Ionicons name="close" size={24} color="#FF6B6B" />
-          </TouchableOpacity>
-          
-          <Animated.View
-            style={[
-              styles.letterContent,
-              {
-                opacity: fadeAnim,
-                transform: [{ scale: scaleAnim }],
-              },
-            ]}
-          >
-            <Text style={styles.letterDate}>February 11, 2025</Text>
-            <Text style={styles.letterGreeting}>Dearest {recipientName},</Text>
-            <Text style={styles.letterBody}>{letterContent}</Text>
-            <Text style={styles.letterClosing}>With all my love,</Text>
-            <Text style={styles.letterSignature}>Me</Text>
-          </Animated.View>
-
-          <View style={styles.letterActions}>
-            <TouchableOpacity style={styles.actionButton}>
-              <MaterialIcons name="content-copy" size={20} color="#FF6B6B" />
-              <Text style={styles.actionText}>Copy</Text>
+        <ViewShot ref={viewShotRef} options={{ format: "png", quality: 0.8 }}>
+          <View style={[styles.letterContainer, styles.letterBackground]}>
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => setShowResult(false)}
+            >
+              <Ionicons name="close" size={24} color="#FF6B6B" />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.actionButton}>
-              <MaterialIcons name="share" size={20} color="#FF6B6B" />
-              <Text style={styles.actionText}>Share</Text>
-            </TouchableOpacity>
+            
+            <Animated.View
+              style={[
+                styles.letterContent,
+                {
+                  opacity: fadeAnim,
+                  transform: [{ scale: scaleAnim }],
+                },
+              ]}
+            >
+              <Text style={styles.letterDate}>February 11, 2025</Text>
+              <Text style={styles.letterGreeting}>Dearest {recipientName},</Text>
+              <Text style={styles.letterBody}>{letterContent}</Text>
+              <Text style={styles.letterClosing}>With all my love,</Text>
+              <Text style={styles.letterSignature}>Me</Text>
+            </Animated.View>
           </View>
+        </ViewShot>
+
+        <View style={styles.letterActions}>
+          <TouchableOpacity style={styles.actionButton}>
+            <MaterialIcons name="content-copy" size={20} color="#FF6B6B" />
+            <Text style={styles.actionText}>Copy</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.actionButton} onPress={handleDownloadAndShare}>
+            <MaterialIcons name="file-download" size={20} color="#FF6B6B" />
+            <Text style={styles.actionText}>Download</Text>
+          </TouchableOpacity>
         </View>
       </View>
     </Modal>
@@ -171,7 +208,7 @@ const LoveLetterGenerator = () => {
 
           <TouchableOpacity
             style={[styles.generateButton, isGenerating && styles.generateButtonDisabled]}
-            onPress={generateLetter}
+            onPress={handleGenerateLetter}
             disabled={!recipientName || isGenerating}
           >
             {isGenerating ? (
@@ -400,6 +437,9 @@ const styles = StyleSheet.create({
     marginLeft: 5,
     color: '#FF6B6B',
     fontSize: 16,
+  },
+  letterBackground: {
+    backgroundColor: '#FFE5E5',
   },
 });
 
