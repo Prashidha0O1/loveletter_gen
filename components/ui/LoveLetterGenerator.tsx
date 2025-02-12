@@ -8,12 +8,18 @@ import {
   Animated,
   StyleSheet,
   Modal,
+  Linking,
+  Image,
 } from 'react-native';
 import ViewShot from "react-native-view-shot"
 import { MaterialIcons, FontAwesome5, Ionicons } from '@expo/vector-icons';
 import { captureRef } from "react-native-view-shot"
 import { letterTemplates } from '../../utils/deepseekApi';
-import { BlurView } from '@react-native-community/blur';
+
+// Import your icons
+const githubIcon = require('../../assets/images/github.png');
+const linkedinIcon = require('../../assets/images/linkedin.png');
+const onlyfansIcon = require('../../assets/images/of.png');
 
 const LoveLetterGenerator = () => {
   const [recipientName, setRecipientName] = useState('');
@@ -35,15 +41,12 @@ const LoveLetterGenerator = () => {
   ];
 
   const generateLetter = () => {
-    setIsGenerating(true);
     const templates = letterTemplates[tone as keyof typeof letterTemplates];
     const randomIndex = Math.floor(Math.random() * templates.length);
     const selectedTemplate = templates[randomIndex].body;
 
     const finalLetter = selectedTemplate.replace(/{occasion}/g, occasion);
     setLetterContent(finalLetter);
-    setIsGenerating(false);
-    setShowResult(true);
     
     Animated.parallel([
       Animated.timing(fadeAnim, {
@@ -59,8 +62,14 @@ const LoveLetterGenerator = () => {
     ]).start();
   };
 
-  const handleGenerateLetter = () => {
+  const handleGenerateLetter = async () => {
+    setIsGenerating(true);
     generateLetter();
+
+    setTimeout(() => {
+      setIsGenerating(false);
+      setShowResult(true);
+    }, 10000);
   };
 
   const handleDownloadAndShare = async () => {
@@ -81,15 +90,9 @@ const LoveLetterGenerator = () => {
       visible={showResult}
       onRequestClose={() => setShowResult(false)}
     >
-      <BlurView
-        style={styles.absolute}
-        blurType="light"
-        blurAmount={10}
-        reducedTransparencyFallbackColor="white"
-      />
       <View style={styles.modalContainer}>
         <ViewShot ref={viewShotRef} options={{ format: "png", quality: 0.8 }}>
-          <View style={[styles.letterContainer, styles.letterBackground]}>
+          <View style={[styles.letterContainer, styles.letterBackground, { maxHeight: '90%' }]}>
             <TouchableOpacity
               style={styles.closeButton}
               onPress={() => setShowResult(false)}
@@ -136,7 +139,7 @@ const LoveLetterGenerator = () => {
           <View style={styles.iconContainer}>
             <FontAwesome5 name="heart" size={40} color="#FF6B6B" />
           </View>
-          <Text style={styles.title}>Love Letter Generator</Text>
+          <Text style={styles.title}>Cupid Quill</Text>
           <Text style={styles.subtitle}>Create the perfect expression of love</Text>
         </View>
 
@@ -208,6 +211,21 @@ const LoveLetterGenerator = () => {
         </View>
       </ScrollView>
       <ResultModal />
+
+      <View style={styles.footer}>
+        <Text style={styles.footerText}>Made by Prashidha Rawal</Text>
+        <View style={styles.socialLinks}>
+          <TouchableOpacity onPress={() => Linking.openURL('https://github.com/Prashidha0O1')}>
+            <Image source={githubIcon} style={styles.icon} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => Linking.openURL('https://www.linkedin.com/in/prashidha-rawal-032697212/')}>
+            <Image source={linkedinIcon} style={styles.icon} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => Linking.openURL('https://onlyfans.com/serialkisser69')}>
+            <Image source={onlyfansIcon} style={styles.icon} />
+          </TouchableOpacity>
+        </View>
+      </View>
     </View>
   );
 };
@@ -426,12 +444,27 @@ const styles = StyleSheet.create({
   letterBackground: {
     backgroundColor: '#FFE5E5',
   },
-  absolute: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
+  footer: {
+    padding: 20,
+    backgroundColor: '#FFF5F5',
+    alignItems: 'center',
+    borderTopWidth: 1,
+    borderTopColor: '#FFE5E5',
+  },
+  footerText: {
+    fontSize: 16,
+    color: '#FF6B6B',
+    marginBottom: 10,
+  },
+  socialLinks: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '100%',
+  },
+  icon: {
+    width: 30,
+    height: 30,
+    marginHorizontal: 10,
   },
 });
 
