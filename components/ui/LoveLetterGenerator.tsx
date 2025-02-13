@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -38,6 +38,12 @@ const LoveLetterGenerator = () => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.95)).current;
 
+  const [forceUpdate, setForceUpdate] = useState(0);
+
+  useEffect(() => {
+    setForceUpdate((prev) => prev + 1);
+  }, [letterContent]);
+
   const toneOptions = [
     { id: 'romantic', icon: 'heart', label: 'Romantic' },
     { id: 'sweet', icon: 'smile-beam', label: 'Sweet' },
@@ -55,7 +61,8 @@ const LoveLetterGenerator = () => {
       
       const result = await model.generateContent(prompt);
       const text = await result.response.text(); // FIXED HERE
-  
+      console.log("API Response:", result);
+      console.log("Extracted Text:", text);
       setLetterContent(text);
       setShowResult(true);
     } catch (error) {
