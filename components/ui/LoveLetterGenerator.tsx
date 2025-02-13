@@ -47,24 +47,26 @@ const LoveLetterGenerator = () => {
 
   const handleGenerateLetter = async () => {
     if (!recipientName) return;
-
+  
     setIsGenerating(true);
     
     try {
       const prompt = `Write a ${tone} love letter for ${recipientName}. Occasion: ${occasion || "Just because"}.`;
       
       const result = await model.generateContent(prompt);
-      const text = result.response.text();
-
+      const text = await result.response.text(); // FIXED HERE
+  
       setLetterContent(text);
       setShowResult(true);
     } catch (error) {
       console.error("Error generating love letter:", error);
       alert("Failed to generate the love letter. Please try again.");
     }
-
+  
     setIsGenerating(false);
   };
+  
+  
 
   const handleDownloadAndShare = async () => {
     try {
