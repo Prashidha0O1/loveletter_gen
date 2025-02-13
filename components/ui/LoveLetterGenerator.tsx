@@ -23,8 +23,8 @@ const linkedinIcon = require('../../assets/images/linkedin.png');
 const onlyfansIcon = require('../../assets/images/of.png');
 
 // Initialize Gemini API with your API Key
-const genAI = new GoogleGenerativeAI("YOUR_GEMINI_API_KEY"); // Replace with your actual API key
-const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+const genAI = new GoogleGenerativeAI("AIzaSyCulHvXvRHonZut6wcqvIqCeZwdP-c0b90"); // Replace with your actual API key
+const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
 const LoveLetterGenerator = () => {
   const [recipientName, setRecipientName] = useState('');
