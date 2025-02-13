@@ -23,8 +23,8 @@ const linkedinIcon = require('../../assets/images/linkedin.png');
 const onlyfansIcon = require('../../assets/images/of.png');
 
 // Initialize Gemini API with your API Key
-const genAI = new GoogleGenerativeAI("AIzaSyCulHvXvRHonZut6wcqvIqCeZwdP-c0b90"); // Replace with your actual API key
-const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+const genAI = new GoogleGenerativeAI("YOUR_GEMINI_API_KEY"); // Replace with your actual API key
+const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
 const LoveLetterGenerator = () => {
   const [recipientName, setRecipientName] = useState('');
@@ -60,10 +60,11 @@ const LoveLetterGenerator = () => {
       const prompt = `Write a ${tone} love letter for ${recipientName}. Occasion: ${occasion || "Just because"}.`;
       
       const result = await model.generateContent(prompt);
-      const text = await result.response.text(); // FIXED HERE
-      console.log("API Response:", result);
-      console.log("Extracted Text:", text);
-      setLetterContent(text);
+      const responseText = await result.response.text();
+
+      console.log("Generated Letter:", responseText);
+
+      setLetterContent(responseText);
       setShowResult(true);
     } catch (error) {
       console.error("Error generating love letter:", error);
@@ -73,7 +74,10 @@ const LoveLetterGenerator = () => {
     setIsGenerating(false);
   };
   
-  
+  // Log updated letter content for debugging
+  useEffect(() => {
+    console.log("Updated Letter Content:", letterContent);
+  }, [letterContent]);
 
   const handleDownloadAndShare = async () => {
     try {
@@ -211,6 +215,15 @@ const LoveLetterGenerator = () => {
               </View>
             )}
           </TouchableOpacity>
+        </View>
+
+        {/* Result Display Section */}
+        <View style={styles.resultContainer}>
+          {letterContent ? (
+            <Text style={styles.letterText}>{letterContent}</Text>
+          ) : (
+            <Text style={styles.placeholderText}>Your letter will appear here...</Text>
+          )}
         </View>
       </ScrollView>
       <ResultModal />
@@ -468,6 +481,24 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
     marginHorizontal: 10,
+  },
+  resultContainer: {
+    marginTop: 20,
+    padding: 15,
+    backgroundColor: "#FFE4E1",
+    borderRadius: 10,
+    minHeight: 200,
+  },
+  letterText: {
+    fontSize: 16,
+    color: "#333",
+    textAlign: "left",
+  },
+  placeholderText: {
+    fontSize: 16,
+    color: "#888",
+    textAlign: "center",
+    fontStyle: "italic",
   },
 });
 
