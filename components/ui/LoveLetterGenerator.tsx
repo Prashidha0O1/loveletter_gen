@@ -15,11 +15,16 @@ import ViewShot from "react-native-view-shot"
 import { MaterialIcons, FontAwesome5, Ionicons } from '@expo/vector-icons';
 import { captureRef } from "react-native-view-shot"
 import { letterTemplates } from '../../utils/deepseekApi';
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 // Import your icons
 const githubIcon = require('../../assets/images/github.png');
 const linkedinIcon = require('../../assets/images/linkedin.png');
 const onlyfansIcon = require('../../assets/images/of.png');
+
+// Initialize Gemini API with your API Key
+const genAI = new GoogleGenerativeAI("AIzaSyCulHvXvRHonZut6wcqvIqCeZwdP-c0b90"); // Replace with your actual API key
+const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
 const LoveLetterGenerator = () => {
   const [recipientName, setRecipientName] = useState('');
@@ -40,36 +45,25 @@ const LoveLetterGenerator = () => {
     { id: 'poetic', icon: 'feather', label: 'Poetic' },
   ];
 
-  const generateLetter = () => {
-    const templates = letterTemplates[tone as keyof typeof letterTemplates];
-    const randomIndex = Math.floor(Math.random() * templates.length);
-    const selectedTemplate = templates[randomIndex].body;
-
-    const finalLetter = selectedTemplate.replace(/{occasion}/g, occasion);
-    setLetterContent(finalLetter);
-    
-    Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 1000,
-        useNativeDriver: true,
-      }),
-      Animated.spring(scaleAnim, {
-        toValue: 1,
-        friction: 8,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  };
-
   const handleGenerateLetter = async () => {
-    setIsGenerating(true);
-    generateLetter();
+    if (!recipientName) return;
 
-    setTimeout(() => {
-      setIsGenerating(false);
+    setIsGenerating(true);
+    
+    try {
+      const prompt = `Write a ${tone} love letter for ${recipientName}. Occasion: ${occasion || "Just because"}.`;
+      
+      const result = await model.generateContent(prompt);
+      const text = result.response.text();
+
+      setLetterContent(text);
       setShowResult(true);
-    }, 10000);
+    } catch (error) {
+      console.error("Error generating love letter:", error);
+      alert("Failed to generate the love letter. Please try again.");
+    }
+
+    setIsGenerating(false);
   };
 
   const handleDownloadAndShare = async () => {
