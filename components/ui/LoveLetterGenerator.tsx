@@ -11,13 +11,14 @@ import {
   Linking,
   Image,
 } from 'react-native';
-import ViewShot from "react-native-view-shot"
+import ViewShot from "react-native-view-shot";
 import { MaterialIcons, FontAwesome5, Ionicons } from '@expo/vector-icons';
-import { captureRef } from "react-native-view-shot"
+import { captureRef } from "react-native-view-shot";
 import { letterTemplates } from '../../utils/deepseekApi';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import * as Sharing from 'expo-sharing';
 import * as FileSystem from 'expo-file-system';
+import Clipboard from '@react-native-clipboard/clipboard';
 
 // Import your icons
 const githubIcon = require('../../assets/images/github.png');
@@ -25,7 +26,7 @@ const linkedinIcon = require('../../assets/images/linkedin.png');
 const onlyfansIcon = require('../../assets/images/of.png');
 
 // Initialize Gemini API with your API Key
-const genAI = new GoogleGenerativeAI("AIzaSyCulHvXvRHonZut6wcqvIqCeZwdP-c0b90"); // Replace with your actual API key
+const genAI = new GoogleGenerativeAI("AIzaSyCulHvXvRHonZut6wcqvIqCeZwdP-c0b90");
 const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
 const LoveLetterGenerator = () => {
@@ -36,11 +37,9 @@ const LoveLetterGenerator = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [letterContent, setLetterContent] = useState('');
   const viewShotRef = useRef(null);
-  
+  const [forceUpdate, setForceUpdate] = useState(0);
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.95)).current;
-
-  const [forceUpdate, setForceUpdate] = useState(0);
 
   useEffect(() => {
     setForceUpdate((prev) => prev + 1);
@@ -75,8 +74,7 @@ const LoveLetterGenerator = () => {
   
     setIsGenerating(false);
   };
-  
-  // Log updated letter content for debugging
+
   useEffect(() => {
     console.log("Updated Letter Content:", letterContent);
   }, [letterContent]);
@@ -89,6 +87,15 @@ const LoveLetterGenerator = () => {
       await Sharing.shareAsync(filePath);
     } catch (error) {
       console.error("Error sharing love letter:", error);
+    }
+  };
+
+  const handleCopyToClipboard = () => {
+    if (letterContent) {
+      Clipboard.setString(letterContent);
+      alert("Letter copied to clipboard!");
+    } else {
+      alert("No letter content to copy.");
     }
   };
 
@@ -170,29 +177,42 @@ const LoveLetterGenerator = () => {
           </TouchableOpacity>
         </View>
 
-        {/* Result Display Section */}
-        <View style={styles.resultContainer}>
+        <View style={styles.resultContainer} ref={viewShotRef}>
           {letterContent ? (
             <Text style={styles.letterText}>{letterContent}</Text>
           ) : (
             <Text style={styles.placeholderText}>Your letter will appear here...</Text>
           )}
         </View>
+
+        {letterContent && (
+          <>
+            <TouchableOpacity style={styles.copyButton} onPress={handleCopyToClipboard}>
+              <Text style={styles.copyButtonText}>Copy to Clipboard</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity style={styles.shareButton} onPress={handleDownloadAndShare}>
+              <Text style={styles.shareButtonText}>Share Letter</Text>
+            </TouchableOpacity>
+          </>
+        )}
       </ScrollView>
 
-      {/* Footer Section with Icons */}
       <View style={styles.footer}>
-        <Text style={styles.footerText}>Built with ❤ by Prashidha Rawal</Text>
-        <Text style={styles.footerText}>If you like this application drop a follow on my socials</Text>
+        <Text style={styles.footerText}>Crafted with ❤ by Prashidha Rawal</Text>
+        <Text style={styles.footerText}>Enjoying the app? Show some love by following me on socials!</Text>
         <View style={styles.socialLinks}>
           <TouchableOpacity onPress={() => Linking.openURL('https://github.com/Prashidha0O1')}>
-            <Image source={githubIcon} style={styles.icon} />
+          <FontAwesome5 name="github" size={30} color="#FF6B6B" />
           </TouchableOpacity>
           <TouchableOpacity onPress={() => Linking.openURL('https://www.linkedin.com/in/prashidha-rawal-032697212/')}>
-            <Image source={linkedinIcon} style={styles.icon} />
+          <FontAwesome5 name="linkedin" size={30} color="#FF6B6B" />
           </TouchableOpacity>
           <TouchableOpacity onPress={() => Linking.openURL('https://onlyfans.com/serialkisser69')}>
             <Image source={onlyfansIcon} style={styles.icon} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => Linking.openURL('https://x.com/0xPrashidha')}>
+            <FontAwesome5 name="twitter" size={30} color="#FF6B6B" />
           </TouchableOpacity>
         </View>
       </View>
@@ -200,7 +220,6 @@ const LoveLetterGenerator = () => {
   );
 };
 
-// Styles for the footer and result display
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -355,6 +374,30 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontStyle: "italic",
   },
+  copyButton: {
+    backgroundColor: '#FF6B6B',
+    borderRadius: 10,
+    padding: 15,
+    marginTop: 10,
+    alignItems: 'center',
+  },
+  copyButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  shareButton: {
+    backgroundColor: '#FF8B8B',
+    borderRadius: 10,
+    padding: 15,
+    marginTop: 10,
+    alignItems: 'center',
+  },
+  shareButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
   footer: {
     padding: 20,
     backgroundColor: '#FFF5F5',
@@ -371,6 +414,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     width: '100%',
+    alignItems: 'center',
   },
   icon: {
     width: 30,
