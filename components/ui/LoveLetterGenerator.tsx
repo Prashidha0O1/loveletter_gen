@@ -16,6 +16,8 @@ import { MaterialIcons, FontAwesome5, Ionicons } from '@expo/vector-icons';
 import { captureRef } from "react-native-view-shot"
 import { letterTemplates } from '../../utils/deepseekApi';
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import * as Sharing from 'expo-sharing';
+import * as FileSystem from 'expo-file-system';
 
 // Import your icons
 const githubIcon = require('../../assets/images/github.png');
@@ -81,63 +83,14 @@ const LoveLetterGenerator = () => {
 
   const handleDownloadAndShare = async () => {
     try {
-      const uri = await captureRef(viewShotRef, {
-        format: "png",
-        quality: 0.8,
-      });
+      const uri = await captureRef(viewShotRef, { format: "png", quality: 0.8 });
+      const filePath = FileSystem.cacheDirectory + 'love_letter.png';
+      await FileSystem.moveAsync({ from: uri, to: filePath });
+      await Sharing.shareAsync(filePath);
     } catch (error) {
       console.error("Error sharing love letter:", error);
     }
   };
-
-  const ResultModal = () => (
-    <Modal
-      animationType="slide"
-      transparent={true}
-      visible={showResult}
-      onRequestClose={() => setShowResult(false)}
-    >
-      <View style={styles.modalContainer}>
-        <ViewShot ref={viewShotRef} options={{ format: "png", quality: 0.8 }}>
-          <View style={[styles.letterContainer, styles.letterBackground, { maxHeight: '90%' }]}>
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={() => setShowResult(false)}
-            >
-              <Ionicons name="close" size={24} color="#FF6B6B" />
-            </TouchableOpacity>
-            
-            <Animated.View
-              style={[
-                styles.letterContent,
-                {
-                  opacity: fadeAnim,
-                  transform: [{ scale: scaleAnim }],
-                },
-              ]}
-            >
-              <Text style={styles.letterDate}>February 11, 2025</Text>
-              <Text style={styles.letterGreeting}>Dearest {recipientName},</Text>
-              <Text style={styles.letterBody}>{letterContent}</Text>
-              <Text style={styles.letterClosing}>With all my love,</Text>
-              <Text style={styles.letterSignature}>Your Lovely Ai Assistant, Destiny</Text>
-            </Animated.View>
-          </View>
-        </ViewShot>
-
-        <View style={styles.letterActions}>
-          <TouchableOpacity style={styles.actionButton}>
-            <MaterialIcons name="content-copy" size={20} color="#FF6B6B" />
-            <Text style={styles.actionText}>Copy</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.actionButton} onPress={handleDownloadAndShare}>
-            <MaterialIcons name="file-download" size={20} color="#FF6B6B" />
-            <Text style={styles.actionText}>Download</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </Modal>
-  );
 
   return (
     <View style={styles.container}>
@@ -152,7 +105,7 @@ const LoveLetterGenerator = () => {
 
         <View style={styles.form}>
           <View style={styles.inputContainer}>
-            <MaterialIcons name="person" size={24} color="#FF6B6B" />
+            <FontAwesome5 name="user" size={24} color="#FF6B6B" />
             <TextInput
               style={styles.input}
               placeholder="Recipient's Name"
@@ -163,7 +116,7 @@ const LoveLetterGenerator = () => {
           </View>
 
           <View style={styles.inputContainer}>
-            <MaterialIcons name="event" size={24} color="#FF6B6B" />
+            <FontAwesome5 name="calendar-alt" size={24} color="#FF6B6B" />
             <TextInput
               style={styles.input}
               placeholder="Special Occasion (Optional)"
@@ -210,7 +163,7 @@ const LoveLetterGenerator = () => {
               <Text style={styles.generateButtonText}>Creating Magic...</Text>
             ) : (
               <View style={styles.generateButtonContent}>
-                <MaterialIcons name="favorite" size={24} color="#fff" />
+                <FontAwesome5 name="magic" size={24} color="#fff" />
                 <Text style={styles.generateButtonText}>Generate Love Letter</Text>
               </View>
             )}
@@ -226,10 +179,11 @@ const LoveLetterGenerator = () => {
           )}
         </View>
       </ScrollView>
-      <ResultModal />
 
+      {/* Footer Section with Icons */}
       <View style={styles.footer}>
-        <Text style={styles.footerText}>Made by Prashidha Rawal</Text>
+        <Text style={styles.footerText}>Built with ❤ by Prashidha Rawal</Text>
+        <Text style={styles.footerText}>If you like this application drop a follow on my socials</Text>
         <View style={styles.socialLinks}>
           <TouchableOpacity onPress={() => Linking.openURL('https://github.com/Prashidha0O1')}>
             <Image source={githubIcon} style={styles.icon} />
@@ -246,6 +200,7 @@ const LoveLetterGenerator = () => {
   );
 };
 
+// Styles for the footer and result display
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -382,83 +337,23 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginLeft: 10,
   },
-  modalContainer: {
-    flex: 1,
-    backgroundColor: 'rgba(255, 107, 107, 0.2)',
-    justifyContent: 'center',
-    padding: 20,
-  },
-  letterContainer: {
-    backgroundColor: '#fff',
-    borderRadius: 20,
-    padding: 20,
-    maxHeight: '80%',
-    shadowColor: '#FF6B6B',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 4.65,
-    elevation: 8,
-  },
-  closeButton: {
-    position: 'absolute',
-    right: 15,
-    top: 15,
-    zIndex: 1,
-  },
-  letterContent: {
+  resultContainer: {
     marginTop: 20,
+    padding: 15,
+    backgroundColor: "#FFE4E1",
+    borderRadius: 10,
+    minHeight: 200,
   },
-  letterDate: {
-    fontSize: 14,
-    color: '#999',
-    marginBottom: 20,
-  },
-  letterGreeting: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#FF6B6B',
-    marginBottom: 15,
-  },
-  letterBody: {
+  letterText: {
     fontSize: 16,
-    lineHeight: 24,
-    color: '#666',
-    marginBottom: 20,
+    color: "#333",
+    textAlign: "left",
   },
-  letterClosing: {
+  placeholderText: {
     fontSize: 16,
-    color: '#FF6B6B',
-    marginTop: 20,
-  },
-  letterSignature: {
-    fontSize: 20,
-    fontStyle: 'italic',
-    color: '#FF6B6B',
-    marginTop: 10,
-  },
-  letterActions: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginTop: 20,
-    borderTopWidth: 1,
-    borderTopColor: '#FFE5E5',
-    paddingTop: 20,
-  },
-  actionButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 10,
-  },
-  actionText: {
-    marginLeft: 5,
-    color: '#FF6B6B',
-    fontSize: 16,
-  },
-  letterBackground: {
-    backgroundColor: '#FFE5E5',
+    color: "#888",
+    textAlign: "center",
+    fontStyle: "italic",
   },
   footer: {
     padding: 20,
@@ -481,24 +376,6 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
     marginHorizontal: 10,
-  },
-  resultContainer: {
-    marginTop: 20,
-    padding: 15,
-    backgroundColor: "#FFE4E1",
-    borderRadius: 10,
-    minHeight: 200,
-  },
-  letterText: {
-    fontSize: 16,
-    color: "#333",
-    textAlign: "left",
-  },
-  placeholderText: {
-    fontSize: 16,
-    color: "#888",
-    textAlign: "center",
-    fontStyle: "italic",
   },
 });
 
