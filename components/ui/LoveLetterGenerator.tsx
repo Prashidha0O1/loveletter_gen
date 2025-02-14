@@ -18,6 +18,7 @@ import { letterTemplates } from '../../utils/deepseekApi';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import * as Sharing from 'expo-sharing';
 import * as FileSystem from 'expo-file-system';
+import config from '../../config';
 import Clipboard from '@react-native-clipboard/clipboard';
 
 // Import your icons
@@ -26,7 +27,7 @@ const linkedinIcon = require('../../assets/images/linkedin.png');
 const onlyfansIcon = require('../../assets/images/of.png');
 
 // Initialize Gemini API with your API Key
-const genAI = new GoogleGenerativeAI("AIzaSyCulHvXvRHonZut6wcqvIqCeZwdP-c0b90");
+const genAI = new GoogleGenerativeAI(config.GOOGLE_GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
 const LoveLetterGenerator = () => {
